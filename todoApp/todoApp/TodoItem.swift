@@ -27,7 +27,6 @@ extension TodoItem: JSONParsable {
         var json = [
             "id": id,
             "text": text,
-            "priority": priority.rawValue,
             "done": done,
             "creationDate": creationDate.timeIntervalSince1970,
         ] as [String: Any]
@@ -40,6 +39,10 @@ extension TodoItem: JSONParsable {
             json["editDate"] = editDate.timeIntervalSince1970
         }
         
+        if priority != .normal {
+            json["priority"] = priority.rawValue
+        }
+        
         return json
     }
     
@@ -47,9 +50,7 @@ extension TodoItem: JSONParsable {
         guard let json = json as? [String: Any],
               let id = json["id"] as? String,
               let text = json["text"] as? String,
-              let priorityText = json["priority"] as? String,
               let done = json["done"] as? Bool,
-              let priority = Priority(rawValue: priorityText),
               let creationDateInterval = json["creationDate"] as? TimeInterval else {
             return nil
         }
@@ -62,6 +63,12 @@ extension TodoItem: JSONParsable {
         var editDate: Date?
         if let editDateInterval = json["editDate"] as? TimeInterval {
             editDate = Date(timeIntervalSince1970: editDateInterval)
+        }
+        
+        var priority = Priority.normal
+        if let priorityText = json["priority"] as? String,
+           let priorityStatus = Priority(rawValue: priorityText) {
+            priority = priorityStatus
         }
         
         return TodoItem(id: id,
